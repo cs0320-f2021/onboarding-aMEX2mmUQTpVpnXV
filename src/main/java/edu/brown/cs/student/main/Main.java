@@ -70,6 +70,12 @@ public final class Main {
           System.out.println(arguments[0]);
           // TODO: complete your REPL by adding commands for addition "add" and subtraction
           //  "subtract"
+          double val1 = Double.valueOf(arguments[1]);
+          double val2 = Double.valueOf(arguments[2]);
+          MathBot bot = new MathBot();
+          if(arguments.length <= 2) throw new Exception("");
+          if(arguments[0].equals("add")) System.out.println(bot.add(val1,val2));
+          if(arguments[0].equals("subtract")) System.out.println(bot.subtract(val1,val2));
         } catch (Exception e) {
           // e.printStackTrace();
           System.out.println("ERROR: We couldn't process your input");
