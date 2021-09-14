@@ -68,7 +68,6 @@ public final class Main {
         try {
           input = input.trim();
           String[] arguments = input.split(" ");
-          System.out.println(arguments[0]);
           // TODO: complete your REPL by adding commands for addition "add" and subtraction
           //  "subtract"
           double val1 = Double.parseDouble(arguments[1]);
