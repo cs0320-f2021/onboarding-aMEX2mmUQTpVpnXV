@@ -1,13 +1,14 @@
 package edu.brown.cs.student.main;
 
+import java.awt.*;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
+import java.util.List;
 
 import com.google.common.collect.ImmutableMap;
 
@@ -21,6 +22,8 @@ import spark.Response;
 import spark.Spark;
 import spark.TemplateViewRoute;
 import spark.template.freemarker.FreeMarkerEngine;
+
+
 
 /**
  * The Main class of our project. This is where execution begins.
@@ -41,8 +44,41 @@ public final class Main {
 
   private String[] args;
 
+  List<StarData> starData = null;
+
   private Main(String[] args) {
     this.args = args;
+  }
+
+  private StarData findStar(String name, List<StarData> list) throws Exception {
+    String newName = name.replace("\"", "");
+    for (StarData star : list) {
+      if (star.getName().equals(newName)) return star;
+    }
+    System.out.println("ERROR: Could not find the listed star in the data");
+    return null;
+  }
+  private double distanceFormula(double x1, double y1, double z1, double x2, double y2, double z2){
+    return Math.sqrt((x2-x1)*(x2-x1)+(y2-y1)*(y2-y1)+(z2-z1)*(z2-z1));
+  }
+
+  private List<StarData> kClosestNeighbors(List<StarData> list, double x, double y, double z, int k){
+    List<StarData> randomList = list;
+    List<StarData> res = new ArrayList<>();
+    Collections.shuffle(list); // So that we encounter ties in a random order
+    PriorityQueue<StarData> pq = new PriorityQueue<>((star1, star2) -> {
+      double diff = (distanceFormula(star1.getX(), star1.getY(), star1.getZ(), x, y, z) - distanceFormula(star2.getX(), star2.getY(), star2.getZ(), x, y, z));
+      if (diff == 0) return 0;
+      return (diff > 0) ? 1 : -1;
+    });
+    for(StarData star : randomList) pq.add(star);
+    for(int i = 0; i < k; i++){
+      res.add(pq.poll());
+    }
+    return res;
+  }
+  private static void printStarInfo(StarData star){
+    System.out.println(star.getStarID() + "," + star.getName() + "," + star.getX() + "," + star.getY() + "," + star.getZ());
   }
 
   private void run() {
@@ -68,14 +104,64 @@ public final class Main {
         try {
           input = input.trim();
           String[] arguments = input.split(" ");
-          // TODO: complete your REPL by adding commands for addition "add" and subtraction
-          //  "subtract"
-          double val1 = Double.parseDouble(arguments[1]);
-          double val2 = Double.parseDouble(arguments[2]);
           MathBot bot = new MathBot();
-          if(Objects.equals(arguments[1], "") || Objects.equals(arguments[2], "")) throw new Exception("");
-          if(arguments[0].equals("add")) System.out.println(bot.add(val1,val2));
-          if(arguments[0].equals("subtract")) System.out.println(bot.subtract(val1,val2));
+          if(arguments[0].equals("add")) {
+            if(Objects.equals(arguments[1], "") || Objects.equals(arguments[2], "")) throw new Exception("");
+            else {
+              double val1 = Double.parseDouble(arguments[1]);
+              double val2 = Double.parseDouble(arguments[2]);
+              System.out.println(bot.add(val1,val2));
+            }
+          }
+          if(arguments[0].equals("subtract")) {
+            if(Objects.equals(arguments[1], "") || Objects.equals(arguments[2], "")) throw new Exception("");
+            else {
+              double val1 = Double.parseDouble(arguments[1]);
+              double val2 = Double.parseDouble(arguments[2]);
+              System.out.println(bot.subtract(val1, val2));
+            }
+          }
+          // Project 0 Start
+          try{
+            if(arguments[0].equals("stars")) {
+              Parser customParser = new Parser();
+              starData = customParser.Parse(arguments[1]);
+              for(StarData star : starData) printStarInfo(star);
+            }
+          }catch(Exception e){
+            System.out.println("ERROR: We couldn't process your input");
+          }
+          // Naive Neighbors Start
+          try{
+            if(arguments[0].equals("naive_neighbors")) {
+              int k = Integer.parseInt(arguments[1]);
+              String nameOfStar = arguments[2];
+              if(arguments[2].startsWith("\"")) {
+                for (int i = 3; i < arguments.length; i++) {
+                  nameOfStar = nameOfStar.concat(" ");
+                  nameOfStar = nameOfStar.concat(arguments[i]);
+                }
+              }
+              if(nameOfStar.startsWith("\"") && nameOfStar.endsWith("\"")){
+                StarData desiredStar = findStar(nameOfStar, starData);
+                List<StarData> res = kClosestNeighbors(starData,desiredStar.getX(), desiredStar.getY(), desiredStar.getZ(), k+1);
+                res.remove(0);
+                for(StarData star : res) printStarInfo(star);
+                //stars data/stars/three-star.csv
+                //naive_neighbors 1 "Star One"
+              }
+              else{
+                double x = Double.parseDouble(arguments[2]);
+                double y = Double.parseDouble(arguments[3]);
+                double z = Double.parseDouble(arguments[4]);
+                List<StarData> res = kClosestNeighbors(starData,x,y,z,k);
+                for(StarData star : res) printStarInfo(star);
+              }
+            }
+          }catch(Exception e){
+            System.out.println("ERROR: this tough brotha");
+          }
+
         } catch (Exception e) {
           // e.printStackTrace();
           System.out.println("ERROR: We couldn't process your input");
