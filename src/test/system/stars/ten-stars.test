@@ -1,0 +1,17 @@
+ARGS
+
+INPUT
+stars data/stars/ten-star.csv
+naive_neighbors 5 "Barnard's Star"
+naive_neighbors 3 3 3 3
+OUTPUT
+Read 10 stars from data/stars/ten-star.csv
+0
+71457
+71454
+70667
+118721
+3759
+0
+87666
+END
