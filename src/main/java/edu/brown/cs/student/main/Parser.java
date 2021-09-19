@@ -11,6 +11,12 @@ public class Parser {
     public Parser() {
     }
 
+    /**
+     * This method parses the given file for its star data
+     * @param filepath - The filepath to be referenced
+     * @return - Returns a list of the star data
+     * @throws FileNotFoundException
+     */
     public List<StarData> Parse(String filepath) throws FileNotFoundException {
         List<StarData> list = new ArrayList<>();
         String absolutePath = new File("").getAbsolutePath();

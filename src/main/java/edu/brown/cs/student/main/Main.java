@@ -1,6 +1,5 @@
 package edu.brown.cs.student.main;
 
-import java.awt.*;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -49,7 +48,13 @@ public final class Main {
         this.args = args;
     }
 
-    private StarData findStar(String name, List<StarData> list) throws Exception {
+    /**
+     * This method finds a StarData object by name in a list of stars
+     * @param name - Name of Star
+     * @param list - List of StarData to look through
+     * @return - the StarData object whose name is equal to the inputted name
+     */
+    private StarData findStar(String name, List<StarData> list) {
         String newName = name.replace("\"", "");
         for (StarData star : list) {
             if (star.getName().equals(newName)) return star;
@@ -58,12 +63,30 @@ public final class Main {
         return null;
     }
 
+    /**
+     *
+     * @param x1 - x coordinate for the first star
+     * @param y1 - y coordinate for the first star
+     * @param z1 - z coordinate for the first star
+     * @param x2 - x coordinate for the second star
+     * @param y2 - y coordinate for the second star
+     * @param z2 - z coordinate for the second star
+     * @return The distance of two points in 3D space from one another
+     */
     private double distanceFormula(double x1, double y1, double z1, double x2, double y2, double z2) {
         return Math.sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1) + (z2 - z1) * (z2 - z1));
     }
 
+    /**
+     * This method returns the k closest neighbors to a given point in 3D space
+     * @param list - List of stars to consider
+     * @param x - x coordinate
+     * @param y - y coordinate
+     * @param z - z coordinate
+     * @param k - The number of neighbors to find
+     * @return - A list of the closest k stars
+     */
     private List<StarData> kClosestNeighbors(List<StarData> list, double x, double y, double z, int k) {
-        List<StarData> randomList = list;
         List<StarData> res = new ArrayList<>();
         Collections.shuffle(list); // So that we encounter ties in a random order
         PriorityQueue<StarData> pq = new PriorityQueue<>((star1, star2) -> {
@@ -71,13 +94,17 @@ public final class Main {
             if (diff == 0) return 0;
             return (diff > 0) ? 1 : -1;
         });
-        for (StarData star : randomList) pq.add(star);
+        pq.addAll(list);
         for (int i = 0; i < Math.min(k, list.size()); i++) {
             res.add(pq.poll());
         }
         return res;
     }
 
+    /**
+     * This method prints the fields of a given StarData object
+     * @param star - A StarData object
+     */
     private static void printStarInfo(StarData star) {
         System.out.println(star.getStarID());
     }
@@ -106,56 +133,57 @@ public final class Main {
                     input = input.trim();
                     String[] arguments = input.split(" ");
                     MathBot bot = new MathBot();
-                    if (arguments[0].equals("add")) {
-                        if (Objects.equals(arguments[1], "") || Objects.equals(arguments[2], ""))
-                            throw new Exception("");
-                        else {
-                            double val1 = Double.parseDouble(arguments[1]);
-                            double val2 = Double.parseDouble(arguments[2]);
-                            System.out.println(bot.add(val1, val2));
-                        }
-                    } else if (arguments[0].equals("subtract")) {
-                        if (Objects.equals(arguments[1], "") || Objects.equals(arguments[2], ""))
-                            throw new Exception("");
-                        else {
-                            double val1 = Double.parseDouble(arguments[1]);
-                            double val2 = Double.parseDouble(arguments[2]);
-                            System.out.println(bot.subtract(val1, val2));
-                        }
-                    }
-                    // Project 0 Start
-                    else if (arguments[0].equals("stars")) {
-                        Parser customParser = new Parser();
-                        starData = customParser.Parse(arguments[1]);
-                        System.out.println("Read " + starData.size() + " stars from " + arguments[1]);
-                    }
-                    // Naive Neighbors Start
-                    else if (arguments[0].equals("naive_neighbors")) {
-                        int k = Integer.parseInt(arguments[1]);
-                        String nameOfStar = arguments[2];
-                        if (arguments[2].startsWith("\"")) {
-                            for (int i = 3; i < arguments.length; i++) {
-                                nameOfStar = nameOfStar.concat(" ");
-                                nameOfStar = nameOfStar.concat(arguments[i]);
+                    switch (arguments[0]) {
+                        case "add":
+                            if (Objects.equals(arguments[1], "") || Objects.equals(arguments[2], ""))
+                                throw new Exception("");
+                            else {
+                                double val1 = Double.parseDouble(arguments[1]);
+                                double val2 = Double.parseDouble(arguments[2]);
+                                System.out.println(bot.add(val1, val2));
                             }
-                        }
-                        if (nameOfStar.startsWith("\"") && nameOfStar.endsWith("\"")) {
-                            StarData desiredStar = findStar(nameOfStar, starData);
-                            List<StarData> res = kClosestNeighbors(starData, desiredStar.getX(), desiredStar.getY(), desiredStar.getZ(), k + 1);
-                            res.remove(0);
-                            for (StarData star : res) printStarInfo(star);
-                            //stars data/stars/three-star.csv
-                            //naive_neighbors 1 "Star One"
-                        } else if (arguments.length == 0) {
-                        } else {
-                            double x = Double.parseDouble(arguments[2]);
-                            double y = Double.parseDouble(arguments[3]);
-                            double z = Double.parseDouble(arguments[4]);
-                            List<StarData> res = kClosestNeighbors(starData, x, y, z, k);
-                            for (StarData star : res) printStarInfo(star);
-                        }
-                    } else {
-                        System.out.println("ERROR:");
+                            break;
+                        case "subtract":
+                            if (Objects.equals(arguments[1], "") || Objects.equals(arguments[2], ""))
+                                throw new Exception("");
+                            else {
+                                double val1 = Double.parseDouble(arguments[1]);
+                                double val2 = Double.parseDouble(arguments[2]);
+                                System.out.println(bot.subtract(val1, val2));
+                            }
+                            break;
+                        // Project 0 Start
+                        case "stars":
+                            Parser customParser = new Parser();
+                            starData = customParser.Parse(arguments[1]);
+                            System.out.println("Read " + starData.size() + " stars from " + arguments[1]);
+                            break;
+                        // Naive Neighbors Start
+                        case "naive_neighbors":
+                            int k = Integer.parseInt(arguments[1]);
+                            String nameOfStar = arguments[2];
+                            if (arguments[2].startsWith("\"")) {
+                                for (int i = 3; i < arguments.length; i++) {
+                                    nameOfStar = nameOfStar.concat(" ");
+                                    nameOfStar = nameOfStar.concat(arguments[i]);
+                                }
+                            }
+                            if (nameOfStar.startsWith("\"") && nameOfStar.endsWith("\"")) {
+                                StarData desiredStar = findStar(nameOfStar, starData);
+                                List<StarData> res = kClosestNeighbors(starData, desiredStar.getX(), desiredStar.getY(), desiredStar.getZ(), k + 1);
+                                res.remove(0);
+                                for (StarData star : res) printStarInfo(star);
+                            } else {
+                                double x = Double.parseDouble(arguments[2]);
+                                double y = Double.parseDouble(arguments[3]);
+                                double z = Double.parseDouble(arguments[4]);
+                                List<StarData> res = kClosestNeighbors(starData, x, y, z, k);
+                                for (StarData star : res) printStarInfo(star);
+                            }
+                            break;
+                        default:
+                            System.out.println("ERROR:");
+                            break;
                     }
 
                 } catch (Exception e) {
